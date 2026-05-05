@@ -25,6 +25,11 @@ export default function Detail() {
     }
   }
 
+  const summaryLines = record.threeLineSummary
+    .split("\n")
+    .map((s) => s.trim())
+    .filter((s) => s.length > 0);
+
   return (
     <div className="p-6 max-w-lg mx-auto">
       <div className="flex items-center gap-2 mb-5">
@@ -43,14 +48,29 @@ export default function Detail() {
       <h1 className="text-xl font-bold text-gray-900 mb-5">{record.title}</h1>
 
       <div className="space-y-4">
+        <section className="bg-blue-50 rounded-xl p-4">
+          <h2 className="text-xs font-semibold text-blue-500 uppercase tracking-wider mb-3">세 줄 요약</h2>
+          {summaryLines.length > 0 ? (
+            <ol className="space-y-2">
+              {summaryLines.map((line, idx) => (
+                <li key={idx} className="flex gap-3 text-sm text-gray-800 leading-relaxed">
+                  <span className={`flex-shrink-0 w-5 h-5 rounded-full text-xs font-bold flex items-center justify-center text-white mt-0.5 ${
+                    idx === 0 ? "bg-blue-400" : idx === 1 ? "bg-blue-300" : "bg-blue-200"
+                  }`}>
+                    {idx + 1}
+                  </span>
+                  <span>{line}</span>
+                </li>
+              ))}
+            </ol>
+          ) : (
+            <p className="text-sm text-gray-400">세 줄 요약이 없습니다.</p>
+          )}
+        </section>
+
         <section className="bg-gray-50 rounded-xl p-4">
           <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">원문 요약</h2>
           <p className="text-sm text-gray-700 whitespace-pre-line leading-relaxed">{record.originalSummary}</p>
-        </section>
-
-        <section className="bg-blue-50 rounded-xl p-4">
-          <h2 className="text-xs font-semibold text-blue-400 uppercase tracking-wider mb-2">세 줄 요약</h2>
-          <p className="text-sm text-gray-700 whitespace-pre-line leading-relaxed">{record.threeLineSummary}</p>
         </section>
       </div>
 
