@@ -8,6 +8,7 @@ function migrate(raw: Record[]): Record[] {
   return raw.map((r) => ({
     completed: true,
     editedAfter: false,
+    insight: "",
     ...r,
   }));
 }

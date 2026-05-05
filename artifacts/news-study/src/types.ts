@@ -7,6 +7,7 @@ export interface Record {
   title: string;
   originalSummary: string;
   threeLineSummary: string;
+  insight: string;
   createdAt: string;
   completed: boolean;
   editedAfter: boolean;

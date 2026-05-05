@@ -1,6 +1,28 @@
 import { useParams, useLocation, Link } from "wouter";
 import { useRecords } from "../hooks/useRecords";
 
+const LABEL_MAP: Record<string, string> = {
+  "핵심:": "핵심 사건",
+  "배경:": "원인·배경",
+  "시사점:": "의미·시사점",
+};
+
+function parseSummaryLines(raw: string) {
+  return raw
+    .split("\n")
+    .map((s) => s.trim())
+    .filter((s) => s.length > 0)
+    .map((line) => {
+      const prefix = Object.keys(LABEL_MAP).find((k) => line.startsWith(k));
+      if (prefix) {
+        return { label: LABEL_MAP[prefix], text: line.slice(prefix.length).trim() };
+      }
+      return { label: null, text: line };
+    });
+}
+
+const BADGE_COLORS = ["bg-indigo-500", "bg-blue-400", "bg-sky-400"];
+
 export default function Detail() {
   const params = useParams<{ id: string }>();
   const [, navigate] = useLocation();
@@ -25,10 +47,7 @@ export default function Detail() {
     }
   }
 
-  const summaryLines = record.threeLineSummary
-    .split("\n")
-    .map((s) => s.trim())
-    .filter((s) => s.length > 0);
+  const summaryLines = parseSummaryLines(record.threeLineSummary);
 
   return (
     <div className="p-6 max-w-lg mx-auto">
@@ -38,44 +57,56 @@ export default function Detail() {
         </button>
       </div>
 
-      <div className="flex items-center justify-between mb-2">
+      {record.title && (
+        <h1 className="text-xl font-bold text-gray-900 mb-3 leading-snug">{record.title}</h1>
+      )}
+
+      <div className="flex items-center gap-2 mb-5">
         <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${record.member === "A" ? "bg-blue-100 text-blue-700" : "bg-green-100 text-green-700"}`}>
           멤버 {record.member}
         </span>
         <span className="text-xs text-gray-400">{record.date}</span>
+        <span className="text-xs text-gray-300">·</span>
+        <span className="text-xs text-gray-400">
+          {new Date(record.createdAt).toLocaleString("ko-KR", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
+        </span>
       </div>
 
-      <h1 className="text-xl font-bold text-gray-900 mb-5">{record.title}</h1>
+      <div className="space-y-3">
+        <section className="bg-gray-50 rounded-xl p-4">
+          <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">원문 정리</h2>
+          <p className="text-sm text-gray-700 whitespace-pre-line leading-relaxed">{record.originalSummary}</p>
+        </section>
 
-      <div className="space-y-4">
-        <section className="bg-blue-50 rounded-xl p-4">
-          <h2 className="text-xs font-semibold text-blue-500 uppercase tracking-wider mb-3">세 줄 요약</h2>
+        <section className="bg-indigo-50 rounded-xl p-4">
+          <h2 className="text-xs font-semibold text-indigo-500 uppercase tracking-wider mb-3">핵심 요약</h2>
           {summaryLines.length > 0 ? (
-            <ol className="space-y-2">
-              {summaryLines.map((line, idx) => (
-                <li key={idx} className="flex gap-3 text-sm text-gray-800 leading-relaxed">
-                  <span className={`flex-shrink-0 w-5 h-5 rounded-full text-xs font-bold flex items-center justify-center text-white mt-0.5 ${
-                    idx === 0 ? "bg-blue-400" : idx === 1 ? "bg-blue-300" : "bg-blue-200"
-                  }`}>
+            <ol className="space-y-3">
+              {summaryLines.map((item, idx) => (
+                <li key={idx} className="flex gap-3 text-sm leading-relaxed">
+                  <span className={`flex-shrink-0 w-5 h-5 rounded-full text-[10px] font-bold flex items-center justify-center text-white mt-0.5 ${BADGE_COLORS[idx] ?? "bg-gray-400"}`}>
                     {idx + 1}
                   </span>
-                  <span>{line}</span>
+                  <div>
+                    {item.label && (
+                      <span className="text-xs font-semibold text-indigo-400 mr-1">[{item.label}]</span>
+                    )}
+                    <span className="text-gray-800">{item.text}</span>
+                  </div>
                 </li>
               ))}
             </ol>
           ) : (
-            <p className="text-sm text-gray-400">세 줄 요약이 없습니다.</p>
+            <p className="text-sm text-gray-400">핵심 요약이 없습니다.</p>
           )}
         </section>
 
-        <section className="bg-gray-50 rounded-xl p-4">
-          <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">원문 요약</h2>
-          <p className="text-sm text-gray-700 whitespace-pre-line leading-relaxed">{record.originalSummary}</p>
-        </section>
-      </div>
-
-      <div className="text-xs text-gray-300 mt-4">
-        작성: {new Date(record.createdAt).toLocaleString("ko-KR")}
+        {record.insight && (
+          <section className="bg-amber-50 rounded-xl p-4">
+            <h2 className="text-xs font-semibold text-amber-500 uppercase tracking-wider mb-2">한줄 인사이트</h2>
+            <p className="text-sm text-gray-800 leading-relaxed font-medium">💡 {record.insight}</p>
+          </section>
+        )}
       </div>
 
       <div className="flex gap-3 mt-6">
