@@ -53,7 +53,6 @@ export default function Form() {
     e.preventDefault();
 
     if (isDateFuture) { setError("미래 날짜에는 기록을 추가할 수 없습니다."); return; }
-    if (!title.trim()) { setError("제목을 입력해주세요."); return; }
     if (!originalSummary.trim()) { setError("원문 요약을 입력해주세요."); return; }
     if (!threeLineSummary.trim()) { setError("세 줄 요약을 입력해주세요."); return; }
 
@@ -139,7 +138,7 @@ export default function Form() {
         </div>
 
         <div>
-          <label className="block text-xs font-semibold text-gray-500 mb-1.5">기사 제목</label>
+          <label className="block text-xs font-semibold text-gray-500 mb-1.5">기사 제목 <span className="font-normal text-gray-400">(선택)</span></label>
           <input
             type="text"
             value={title}
