@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useLocation } from "wouter";
 import { useRecords } from "../hooks/useRecords";
-import { getTodayString, getDateBlockReason } from "../utils/dateUtils";
+import { getTodayString, isPast } from "../utils/dateUtils";
 import { extractThreeLineSummary } from "../utils/summaryUtils";
 import type { Member, Record } from "../types";
 
@@ -46,13 +46,13 @@ export default function Form() {
     }
   }
 
-  const dateBlockReason = !isEdit ? getDateBlockReason(date) : null;
-  const isSubmitBlocked = !isEdit && dateBlockReason !== null;
+  const isDatePast = !isEdit && isPast(date);
+  const isDateFuture = !isEdit && date > getTodayString();
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
 
-    if (isSubmitBlocked) { setError(dateBlockReason!); return; }
+    if (isDateFuture) { setError("미래 날짜에는 기록을 추가할 수 없습니다."); return; }
     if (!title.trim()) { setError("제목을 입력해주세요."); return; }
     if (!originalSummary.trim()) { setError("원문 요약을 입력해주세요."); return; }
     if (!threeLineSummary.trim()) { setError("세 줄 요약을 입력해주세요."); return; }
@@ -118,31 +118,22 @@ export default function Form() {
         </div>
 
         <div>
-          <label className="block text-xs font-semibold text-gray-500 mb-1.5">
-            날짜
-            {!isEdit && (
-              <span className="ml-1.5 font-normal text-gray-400">(오늘 날짜만 새 기록 추가 가능)</span>
-            )}
-          </label>
+          <label className="block text-xs font-semibold text-gray-500 mb-1.5">날짜</label>
           <input
             type="date"
             value={date}
-            max={!isEdit ? today : undefined}
+            max={!isEdit ? getTodayString() : undefined}
             onChange={(e) => { setDate(e.target.value); setError(""); }}
-            className={`w-full border rounded-xl px-4 py-2.5 text-sm outline-none transition-colors ${
-              !isEdit && dateBlockReason
-                ? "border-red-300 bg-red-50 focus:border-red-400"
-                : "border-gray-200 focus:border-gray-400"
-            }`}
+            className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-gray-400"
           />
-          {!isEdit && dateBlockReason && (
-            <p className="mt-1.5 text-xs text-red-500 flex items-center gap-1">
-              <span>⚠</span> {dateBlockReason}
+          {!isEdit && isDatePast && (
+            <p className="mt-1.5 text-xs text-amber-600 flex items-center gap-1">
+              <span>ℹ</span> 과거 날짜 기록은 저장되지만 완료율에는 반영되지 않습니다.
             </p>
           )}
-          {!isEdit && !dateBlockReason && (
+          {!isEdit && !isDatePast && !isDateFuture && (
             <p className="mt-1.5 text-xs text-green-600 flex items-center gap-1">
-              <span>✓</span> 오늘 날짜입니다. 기록을 추가할 수 있습니다.
+              <span>✓</span> 오늘 날짜입니다. 완료율에 반영됩니다.
             </p>
           )}
         </div>
@@ -218,14 +209,14 @@ export default function Form() {
 
         <button
           type="submit"
-          disabled={isSubmitBlocked}
+          disabled={isDateFuture}
           className={`w-full py-3.5 rounded-xl text-sm font-semibold transition-colors mt-2 ${
-            isSubmitBlocked
+            isDateFuture
               ? "bg-gray-200 text-gray-400 cursor-not-allowed"
               : "bg-black text-white hover:bg-gray-800"
           }`}
         >
-          {isEdit ? "수정 완료" : isSubmitBlocked ? "추가 불가 (날짜 확인 필요)" : "기록 저장"}
+          {isEdit ? "수정 완료" : "기록 저장"}
         </button>
       </form>
     </div>

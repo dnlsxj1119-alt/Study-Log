@@ -38,7 +38,7 @@ export function useRecords() {
   function addRecord(record: Record) {
     const next_record: Record = {
       ...record,
-      completed: true,
+      completed: !isPast(record.date),
       editedAfter: false,
     };
     setRecords((prev) => {
