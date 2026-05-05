@@ -4,7 +4,6 @@ import Calendar from "./pages/Calendar";
 import Records from "./pages/Records";
 import Detail from "./pages/Detail";
 import Form from "./pages/Form";
-import Keywords from "./pages/Keywords";
 
 function NotFound() {
   return (
@@ -24,7 +23,6 @@ function NavBar() {
     { href: "/", label: "홈", icon: "🏠" },
     { href: "/calendar", label: "달력", icon: "📅" },
     { href: "/records", label: "기록", icon: "📋" },
-    { href: "/keywords", label: "키워드", icon: "🔑" },
   ];
 
   return (
@@ -35,7 +33,7 @@ function NavBar() {
           <Link
             key={href}
             href={href}
-            className={`flex flex-col items-center gap-0.5 px-4 py-1 rounded-lg transition-colors ${active ? "text-black" : "text-gray-400"}`}
+            className={`flex flex-col items-center gap-0.5 px-6 py-1 rounded-lg transition-colors ${active ? "text-black" : "text-gray-400"}`}
           >
             <span className="text-xl">{icon}</span>
             <span className="text-[10px] font-medium">{label}</span>
@@ -56,7 +54,6 @@ function Router() {
         <Route path="/detail/:id" component={Detail} />
         <Route path="/form" component={Form} />
         <Route path="/form/:id" component={Form} />
-        <Route path="/keywords" component={Keywords} />
         <Route component={NotFound} />
       </Switch>
       <NavBar />
