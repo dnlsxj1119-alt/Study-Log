@@ -8,4 +8,6 @@ export interface Record {
   originalSummary: string;
   threeLineSummary: string;
   createdAt: string;
+  completed: boolean;
+  editedAfter: boolean;
 }

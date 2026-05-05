@@ -127,13 +127,20 @@ export default function Calendar() {
   for (let d = 1; d <= daysInMonth; d++) days.push(d);
 
   const thisMonthRecords = monthRecords();
+
+  function isCountable(r: ReturnType<typeof monthRecords>[number]) {
+    return r.completed !== false && r.editedAfter !== true;
+  }
+
   const countA = new Set(
-    thisMonthRecords.filter((r) => r.member === "A").map((r) => r.date)
+    thisMonthRecords.filter((r) => r.member === "A" && isCountable(r)).map((r) => r.date)
   ).size;
   const countB = new Set(
-    thisMonthRecords.filter((r) => r.member === "B").map((r) => r.date)
+    thisMonthRecords.filter((r) => r.member === "B" && isCountable(r)).map((r) => r.date)
   ).size;
-  const countAll = new Set(thisMonthRecords.map((r) => r.date)).size;
+  const countAll = new Set(
+    thisMonthRecords.filter(isCountable).map((r) => r.date)
+  ).size;
 
   const rateA = daysInMonth > 0 ? Math.round((countA / daysInMonth) * 100) : 0;
   const rateB = daysInMonth > 0 ? Math.round((countB / daysInMonth) * 100) : 0;

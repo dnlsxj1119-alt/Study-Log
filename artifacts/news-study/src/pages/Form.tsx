@@ -72,6 +72,8 @@ export default function Form() {
         originalSummary,
         threeLineSummary,
         createdAt: new Date().toISOString(),
+        completed: true,
+        editedAfter: false,
       };
       addRecord(record);
       navigate("/records");
