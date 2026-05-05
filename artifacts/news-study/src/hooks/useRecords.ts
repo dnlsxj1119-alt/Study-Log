@@ -1,8 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import type { Record } from "../types";
 import { isPast } from "../utils/dateUtils";
 
-const STORAGE_KEY = "news-study-records";
+const STORAGE_KEY = "records";
+const OLD_KEY = "news-study-records";
 
 function migrate(raw: Record[]): Record[] {
   return raw.map((r) => ({
@@ -22,8 +23,13 @@ function saveToStorage(records: Record[]) {
 
 function loadFromStorage(): Record[] {
   try {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    return stored ? migrate(JSON.parse(stored)) : [];
+    const stored =
+      localStorage.getItem(STORAGE_KEY) ?? localStorage.getItem(OLD_KEY);
+    if (!stored) return [];
+    const parsed = migrate(JSON.parse(stored));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(parsed));
+    localStorage.removeItem(OLD_KEY);
+    return parsed;
   } catch {
     return [];
   }
@@ -31,8 +37,10 @@ function loadFromStorage(): Record[] {
 
 export function useRecords() {
   const [records, setRecords] = useState<Record[]>(loadFromStorage);
+  const recordsRef = useRef<Record[]>(records);
 
   useEffect(() => {
+    recordsRef.current = records;
     saveToStorage(records);
   }, [records]);
 
@@ -42,33 +50,32 @@ export function useRecords() {
       completed: !isPast(record.date),
       editedAfter: false,
     };
-    setRecords((prev) => {
-      const next = [next_record, ...prev];
-      saveToStorage(next);
-      return next;
-    });
+    const next = [next_record, ...recordsRef.current];
+    recordsRef.current = next;
+    saveToStorage(next);
+    setRecords(next);
   }
 
   function updateRecord(updated: Record) {
     const editedAfterFlag = isPast(updated.date) ? true : updated.editedAfter;
     const patched: Record = { ...updated, editedAfter: editedAfterFlag };
-    setRecords((prev) => {
-      const next = prev.map((r) => (r.id === patched.id ? patched : r));
-      saveToStorage(next);
-      return next;
-    });
+    const next = recordsRef.current.map((r) =>
+      r.id === patched.id ? patched : r
+    );
+    recordsRef.current = next;
+    saveToStorage(next);
+    setRecords(next);
   }
 
   function deleteRecord(id: string) {
-    setRecords((prev) => {
-      const next = prev.filter((r) => r.id !== id);
-      saveToStorage(next);
-      return next;
-    });
+    const next = recordsRef.current.filter((r) => r.id !== id);
+    recordsRef.current = next;
+    saveToStorage(next);
+    setRecords(next);
   }
 
   function getRecord(id: string): Record | undefined {
-    return records.find((r) => r.id === id);
+    return recordsRef.current.find((r) => r.id === id);
   }
 
   return { records, addRecord, updateRecord, deleteRecord, getRecord };
