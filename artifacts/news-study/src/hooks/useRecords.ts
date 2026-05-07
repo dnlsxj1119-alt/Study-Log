@@ -27,7 +27,7 @@ function toRecord(r: StudyRecord): Record {
 
 export function useRecords() {
   const queryClient = useQueryClient();
-  const { data = [], isLoading } = useListRecords();
+  const { data = [], isLoading, isError } = useListRecords();
   const records: Record[] = data.map(toRecord);
 
   const createMutation = useCreateRecord();
@@ -36,44 +36,45 @@ export function useRecords() {
 
   const queryKey = getListRecordsQueryKey();
 
-  function addRecord(record: Record) {
+  async function addRecord(record: Record): Promise<void> {
     const next: Record = {
       ...record,
       completed: !isPast(record.date),
       editedAfter: false,
     };
-    queryClient.setQueryData(queryKey, (old: StudyRecord[] = []) => [next, ...old]);
-    createMutation.mutate(
-      { data: next },
-      { onError: () => queryClient.invalidateQueries({ queryKey }) },
-    );
+    await createMutation.mutateAsync({ data: next });
+    await queryClient.invalidateQueries({ queryKey });
   }
 
-  function updateRecord(updated: Record) {
+  async function updateRecord(updated: Record): Promise<void> {
     const editedAfterFlag = isPast(updated.date) ? true : updated.editedAfter;
     const patched: Record = { ...updated, editedAfter: editedAfterFlag };
-    queryClient.setQueryData(queryKey, (old: StudyRecord[] = []) =>
-      old.map((r) => (r.id === patched.id ? patched : r)),
-    );
-    updateMutation.mutate(
-      { id: patched.id, data: patched },
-      { onError: () => queryClient.invalidateQueries({ queryKey }) },
-    );
+    await updateMutation.mutateAsync({ id: patched.id, data: patched });
+    await queryClient.invalidateQueries({ queryKey });
   }
 
-  function deleteRecord(id: string) {
-    queryClient.setQueryData(queryKey, (old: StudyRecord[] = []) =>
-      old.filter((r) => r.id !== id),
-    );
-    deleteMutation.mutate(
-      { id },
-      { onError: () => queryClient.invalidateQueries({ queryKey }) },
-    );
+  async function deleteRecord(id: string): Promise<void> {
+    await deleteMutation.mutateAsync({ id });
+    await queryClient.invalidateQueries({ queryKey });
   }
 
   function getRecord(id: string): Record | undefined {
     return records.find((r) => r.id === id);
   }
 
-  return { records, isLoading, addRecord, updateRecord, deleteRecord, getRecord };
+  const isMutating =
+    createMutation.isPending ||
+    updateMutation.isPending ||
+    deleteMutation.isPending;
+
+  return {
+    records,
+    isLoading,
+    isError,
+    isMutating,
+    addRecord,
+    updateRecord,
+    deleteRecord,
+    getRecord,
+  };
 }

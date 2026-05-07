@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useParams, useLocation, Link } from "wouter";
 import { useRecords } from "../hooks/useRecords";
 
@@ -28,9 +29,7 @@ function parseOldSummaryLines(raw: string) {
     .map((s) => s.trim())
     .filter((s) => s.length > 0)
     .map((line) => {
-      const prefix = Object.keys(OLD_LABEL_MAP).find((k) =>
-        line.startsWith(k)
-      );
+      const prefix = Object.keys(OLD_LABEL_MAP).find((k) => line.startsWith(k));
       if (prefix) {
         return { label: OLD_LABEL_MAP[prefix], text: line.slice(prefix.length).trim() };
       }
@@ -50,7 +49,8 @@ const KW_COLORS = [
 export default function Detail() {
   const params = useParams<{ id: string }>();
   const [, navigate] = useLocation();
-  const { getRecord, deleteRecord } = useRecords();
+  const { getRecord, deleteRecord, isMutating } = useRecords();
+  const [deleteError, setDeleteError] = useState("");
 
   const record = getRecord(params.id);
 
@@ -66,10 +66,14 @@ export default function Detail() {
     );
   }
 
-  function handleDelete() {
-    if (confirm("이 기록을 삭제하시겠습니까?")) {
-      deleteRecord(record!.id);
+  async function handleDelete() {
+    if (!confirm("이 기록을 삭제하시겠습니까?")) return;
+    setDeleteError("");
+    try {
+      await deleteRecord(record!.id);
       navigate("/records");
+    } catch {
+      setDeleteError("삭제 실패: 서버에 연결할 수 없습니다.");
     }
   }
 
@@ -161,32 +165,30 @@ export default function Detail() {
             ) : (
               <p className="text-sm text-gray-400">핵심 요약이 없습니다.</p>
             )
+          ) : oldLines.length > 0 ? (
+            <ol className="space-y-3">
+              {oldLines.map((item, idx) => (
+                <li key={idx} className="flex gap-3 text-sm leading-relaxed">
+                  <span
+                    className={`flex-shrink-0 w-5 h-5 rounded-full text-[10px] font-bold flex items-center justify-center text-white mt-0.5 ${
+                      BADGE_COLORS[idx] ?? "bg-gray-400"
+                    }`}
+                  >
+                    {idx + 1}
+                  </span>
+                  <div>
+                    {item.label && (
+                      <span className="text-xs font-semibold text-indigo-400 mr-1">
+                        [{item.label}]
+                      </span>
+                    )}
+                    <span className="text-gray-800">{item.text}</span>
+                  </div>
+                </li>
+              ))}
+            </ol>
           ) : (
-            oldLines.length > 0 ? (
-              <ol className="space-y-3">
-                {oldLines.map((item, idx) => (
-                  <li key={idx} className="flex gap-3 text-sm leading-relaxed">
-                    <span
-                      className={`flex-shrink-0 w-5 h-5 rounded-full text-[10px] font-bold flex items-center justify-center text-white mt-0.5 ${
-                        BADGE_COLORS[idx] ?? "bg-gray-400"
-                      }`}
-                    >
-                      {idx + 1}
-                    </span>
-                    <div>
-                      {item.label && (
-                        <span className="text-xs font-semibold text-indigo-400 mr-1">
-                          [{item.label}]
-                        </span>
-                      )}
-                      <span className="text-gray-800">{item.text}</span>
-                    </div>
-                  </li>
-                ))}
-              </ol>
-            ) : (
-              <p className="text-sm text-gray-400">핵심 요약이 없습니다.</p>
-            )
+            <p className="text-sm text-gray-400">핵심 요약이 없습니다.</p>
           )}
         </section>
 
@@ -202,6 +204,12 @@ export default function Detail() {
         )}
       </div>
 
+      {deleteError && (
+        <p className="mt-4 text-red-500 text-xs bg-red-50 rounded-xl px-3 py-2.5">
+          ⚠ {deleteError}
+        </p>
+      )}
+
       <div className="flex gap-3 mt-6">
         <Link
           href={`/form/${record.id}`}
@@ -211,9 +219,10 @@ export default function Detail() {
         </Link>
         <button
           onClick={handleDelete}
-          className="flex-1 bg-red-50 text-red-600 py-3 rounded-xl text-sm font-medium hover:bg-red-100 transition-colors"
+          disabled={isMutating}
+          className="flex-1 bg-red-50 text-red-600 py-3 rounded-xl text-sm font-medium hover:bg-red-100 transition-colors disabled:opacity-50"
         >
-          삭제
+          {isMutating ? "삭제 중..." : "삭제"}
         </button>
       </div>
     </div>

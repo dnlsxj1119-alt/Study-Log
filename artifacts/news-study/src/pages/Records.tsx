@@ -4,7 +4,7 @@ import { useRecords } from "../hooks/useRecords";
 import type { Member } from "../types";
 
 export default function Records() {
-  const { records } = useRecords();
+  const { records, isLoading, isError } = useRecords();
   const [filterMember, setFilterMember] = useState<Member | "ALL">("ALL");
   const [search, setSearch] = useState("");
 
@@ -22,6 +22,12 @@ export default function Records() {
           + 작성
         </Link>
       </div>
+
+      {isError && (
+        <div className="bg-red-50 rounded-xl p-3 mb-4 text-xs text-red-600">
+          ⚠ 불러오기 실패: API 서버에 연결할 수 없습니다. <code className="bg-red-100 px-1 rounded">VITE_API_BASE_URL</code>을 확인하세요.
+        </div>
+      )}
 
       <input
         type="text"
@@ -45,7 +51,11 @@ export default function Records() {
         ))}
       </div>
 
-      {filtered.length === 0 ? (
+      {isLoading ? (
+        <div className="text-center py-16 text-gray-400">
+          <p className="text-sm">기록을 불러오는 중...</p>
+        </div>
+      ) : filtered.length === 0 ? (
         <div className="text-center py-16 text-gray-400">
           <p className="text-3xl mb-2">📋</p>
           <p className="text-sm">기록이 없습니다.</p>

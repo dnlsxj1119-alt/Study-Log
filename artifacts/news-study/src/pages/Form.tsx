@@ -12,7 +12,7 @@ function generateId() {
 export default function Form() {
   const params = useParams<{ id?: string }>();
   const [, navigate] = useLocation();
-  const { getRecord, addRecord, updateRecord } = useRecords();
+  const { getRecord, addRecord, updateRecord, isMutating } = useRecords();
 
   const isEdit = !!params.id;
   const existing = params.id ? getRecord(params.id) : undefined;
@@ -50,7 +50,7 @@ export default function Form() {
   const isDatePast = !isEdit && isPast(date);
   const isDateFuture = !isEdit && date > getTodayString();
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
 
     if (isDateFuture) { setError("미래 날짜에는 기록을 추가할 수 없습니다."); return; }
@@ -59,27 +59,33 @@ export default function Form() {
 
     setError("");
 
-    if (isEdit && existing) {
-      const updated: Record = { ...existing, member, date, title, originalSummary, threeLineSummary, insight };
-      updateRecord(updated);
-      navigate(`/detail/${existing.id}`);
-    } else {
-      const record: Record = {
-        id: generateId(),
-        member,
-        date,
-        title,
-        originalSummary,
-        threeLineSummary,
-        insight,
-        createdAt: new Date().toISOString(),
-        completed: true,
-        editedAfter: false,
-      };
-      addRecord(record);
-      navigate("/records");
+    try {
+      if (isEdit && existing) {
+        const updated: Record = { ...existing, member, date, title, originalSummary, threeLineSummary, insight };
+        await updateRecord(updated);
+        navigate(`/detail/${existing.id}`);
+      } else {
+        const record: Record = {
+          id: generateId(),
+          member,
+          date,
+          title,
+          originalSummary,
+          threeLineSummary,
+          insight,
+          createdAt: new Date().toISOString(),
+          completed: true,
+          editedAfter: false,
+        };
+        await addRecord(record);
+        navigate("/records");
+      }
+    } catch {
+      setError("저장 실패: 서버에 연결할 수 없습니다. VITE_API_BASE_URL 환경변수를 확인하세요.");
     }
   }
+
+  const isSubmitDisabled = isDateFuture || isMutating;
 
   return (
     <div className="p-6 max-w-lg mx-auto">
@@ -219,21 +225,21 @@ export default function Form() {
         </div>
 
         {error && (
-          <p className="text-red-500 text-xs flex items-center gap-1">
-            <span>⚠</span> {error}
+          <p className="text-red-500 text-xs flex items-start gap-1 bg-red-50 rounded-xl px-3 py-2.5 leading-relaxed">
+            <span className="mt-0.5">⚠</span> {error}
           </p>
         )}
 
         <button
           type="submit"
-          disabled={isDateFuture}
+          disabled={isSubmitDisabled}
           className={`w-full py-3.5 rounded-xl text-sm font-semibold transition-colors mt-2 ${
-            isDateFuture
+            isSubmitDisabled
               ? "bg-gray-200 text-gray-400 cursor-not-allowed"
               : "bg-black text-white hover:bg-gray-800"
           }`}
         >
-          {isEdit ? "수정 완료" : "기록 저장"}
+          {isMutating ? "저장 중..." : isEdit ? "수정 완료" : "기록 저장"}
         </button>
       </form>
     </div>
