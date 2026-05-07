@@ -14,3 +14,76 @@ import * as zod from "zod";
 export const HealthCheckResponse = zod.object({
   status: zod.string(),
 });
+
+/**
+ * @summary List all study records
+ */
+export const ListRecordsResponseItem = zod.object({
+  id: zod.string(),
+  member: zod.string(),
+  date: zod.string(),
+  title: zod.string(),
+  originalSummary: zod.string(),
+  threeLineSummary: zod.string(),
+  insight: zod.string(),
+  createdAt: zod.string(),
+  completed: zod.boolean(),
+  editedAfter: zod.boolean(),
+});
+export const ListRecordsResponse = zod.array(ListRecordsResponseItem);
+
+/**
+ * @summary Create a study record
+ */
+export const CreateRecordBody = zod.object({
+  id: zod.string(),
+  member: zod.string(),
+  date: zod.string(),
+  title: zod.string(),
+  originalSummary: zod.string(),
+  threeLineSummary: zod.string(),
+  insight: zod.string(),
+  createdAt: zod.string(),
+  completed: zod.boolean(),
+  editedAfter: zod.boolean(),
+});
+
+/**
+ * @summary Update a study record
+ */
+export const UpdateRecordParams = zod.object({
+  id: zod.coerce.string(),
+});
+
+export const UpdateRecordBody = zod.object({
+  id: zod.string(),
+  member: zod.string(),
+  date: zod.string(),
+  title: zod.string(),
+  originalSummary: zod.string(),
+  threeLineSummary: zod.string(),
+  insight: zod.string(),
+  createdAt: zod.string(),
+  completed: zod.boolean(),
+  editedAfter: zod.boolean(),
+});
+
+export const UpdateRecordResponse = zod.object({
+  id: zod.string(),
+  member: zod.string(),
+  date: zod.string(),
+  title: zod.string(),
+  originalSummary: zod.string(),
+  threeLineSummary: zod.string(),
+  insight: zod.string(),
+  createdAt: zod.string(),
+  completed: zod.boolean(),
+  editedAfter: zod.boolean(),
+});
+
+/**
+ * @summary Delete a study record
+ */
+export const DeleteRecordParams = zod.object({
+  id: zod.coerce.string(),
+});

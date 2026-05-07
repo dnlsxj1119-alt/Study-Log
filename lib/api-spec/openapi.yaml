@@ -10,6 +10,8 @@ servers:
 tags:
   - name: health
     description: Health operations
+  - name: records
+    description: Study record operations
 paths:
   /healthz:
     get:
@@ -24,6 +26,98 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /records:
+    get:
+      operationId: listRecords
+      tags: [records]
+      summary: List all study records
+      responses:
+        "200":
+          description: List of study records
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/StudyRecord"
+    post:
+      operationId: createRecord
+      tags: [records]
+      summary: Create a study record
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/StudyRecord"
+      responses:
+        "201":
+          description: Created record
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StudyRecord"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /records/{id}:
+    put:
+      operationId: updateRecord
+      tags: [records]
+      summary: Update a study record
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/StudyRecord"
+      responses:
+        "200":
+          description: Updated record
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StudyRecord"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      operationId: deleteRecord
+      tags: [records]
+      summary: Delete a study record
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Deleted successfully
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
 components:
   schemas:
     HealthStatus:
@@ -33,4 +127,44 @@ components:
           type: string
       required:
         - status
-
+    StudyRecord:
+      type: object
+      properties:
+        id:
+          type: string
+        member:
+          type: string
+        date:
+          type: string
+        title:
+          type: string
+        originalSummary:
+          type: string
+        threeLineSummary:
+          type: string
+        insight:
+          type: string
+        createdAt:
+          type: string
+        completed:
+          type: boolean
+        editedAfter:
+          type: boolean
+      required:
+        - id
+        - member
+        - date
+        - title
+        - originalSummary
+        - threeLineSummary
+        - insight
+        - createdAt
+        - completed
+        - editedAfter
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error

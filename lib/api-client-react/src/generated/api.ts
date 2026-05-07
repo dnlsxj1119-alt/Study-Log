@@ -5,18 +5,21 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import type {
+  MutationFunction,
   QueryFunction,
   QueryKey,
+  UseMutationOptions,
+  UseMutationResult,
   UseQueryOptions,
   UseQueryResult,
 } from "@tanstack/react-query";
 
-import type { HealthStatus } from "./api.schemas";
+import type { ErrorResponse, HealthStatus, StudyRecord } from "./api.schemas";
 
 import { customFetch } from "../custom-fetch";
-import type { ErrorType } from "../custom-fetch";
+import type { ErrorType, BodyType } from "../custom-fetch";
 
 type AwaitedInput<T> = PromiseLike<T> | T;
 
@@ -99,3 +102,335 @@ export function useHealthCheck<
 
   return { ...query, queryKey: queryOptions.queryKey };
 }
+
+/**
+ * @summary List all study records
+ */
+export const getListRecordsUrl = () => {
+  return `/api/records`;
+};
+
+export const listRecords = async (
+  options?: RequestInit,
+): Promise<StudyRecord[]> => {
+  return customFetch<StudyRecord[]>(getListRecordsUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getListRecordsQueryKey = () => {
+  return [`/api/records`] as const;
+};
+
+export const getListRecordsQueryOptions = <
+  TData = Awaited<ReturnType<typeof listRecords>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listRecords>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getListRecordsQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof listRecords>>> = ({
+    signal,
+  }) => listRecords({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof listRecords>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type ListRecordsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listRecords>>
+>;
+export type ListRecordsQueryError = ErrorType<unknown>;
+
+/**
+ * @summary List all study records
+ */
+
+export function useListRecords<
+  TData = Awaited<ReturnType<typeof listRecords>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listRecords>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getListRecordsQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Create a study record
+ */
+export const getCreateRecordUrl = () => {
+  return `/api/records`;
+};
+
+export const createRecord = async (
+  studyRecord: StudyRecord,
+  options?: RequestInit,
+): Promise<StudyRecord> => {
+  return customFetch<StudyRecord>(getCreateRecordUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(studyRecord),
+  });
+};
+
+export const getCreateRecordMutationOptions = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createRecord>>,
+    TError,
+    { data: BodyType<StudyRecord> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof createRecord>>,
+  TError,
+  { data: BodyType<StudyRecord> },
+  TContext
+> => {
+  const mutationKey = ["createRecord"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof createRecord>>,
+    { data: BodyType<StudyRecord> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return createRecord(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type CreateRecordMutationResult = NonNullable<
+  Awaited<ReturnType<typeof createRecord>>
+>;
+export type CreateRecordMutationBody = BodyType<StudyRecord>;
+export type CreateRecordMutationError = ErrorType<ErrorResponse>;
+
+/**
+ * @summary Create a study record
+ */
+export const useCreateRecord = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createRecord>>,
+    TError,
+    { data: BodyType<StudyRecord> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof createRecord>>,
+  TError,
+  { data: BodyType<StudyRecord> },
+  TContext
+> => {
+  return useMutation(getCreateRecordMutationOptions(options));
+};
+
+/**
+ * @summary Update a study record
+ */
+export const getUpdateRecordUrl = (id: string) => {
+  return `/api/records/${id}`;
+};
+
+export const updateRecord = async (
+  id: string,
+  studyRecord: StudyRecord,
+  options?: RequestInit,
+): Promise<StudyRecord> => {
+  return customFetch<StudyRecord>(getUpdateRecordUrl(id), {
+    ...options,
+    method: "PUT",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(studyRecord),
+  });
+};
+
+export const getUpdateRecordMutationOptions = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateRecord>>,
+    TError,
+    { id: string; data: BodyType<StudyRecord> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof updateRecord>>,
+  TError,
+  { id: string; data: BodyType<StudyRecord> },
+  TContext
+> => {
+  const mutationKey = ["updateRecord"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof updateRecord>>,
+    { id: string; data: BodyType<StudyRecord> }
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return updateRecord(id, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UpdateRecordMutationResult = NonNullable<
+  Awaited<ReturnType<typeof updateRecord>>
+>;
+export type UpdateRecordMutationBody = BodyType<StudyRecord>;
+export type UpdateRecordMutationError = ErrorType<ErrorResponse>;
+
+/**
+ * @summary Update a study record
+ */
+export const useUpdateRecord = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateRecord>>,
+    TError,
+    { id: string; data: BodyType<StudyRecord> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof updateRecord>>,
+  TError,
+  { id: string; data: BodyType<StudyRecord> },
+  TContext
+> => {
+  return useMutation(getUpdateRecordMutationOptions(options));
+};
+
+/**
+ * @summary Delete a study record
+ */
+export const getDeleteRecordUrl = (id: string) => {
+  return `/api/records/${id}`;
+};
+
+export const deleteRecord = async (
+  id: string,
+  options?: RequestInit,
+): Promise<void> => {
+  return customFetch<void>(getDeleteRecordUrl(id), {
+    ...options,
+    method: "DELETE",
+  });
+};
+
+export const getDeleteRecordMutationOptions = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteRecord>>,
+    TError,
+    { id: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof deleteRecord>>,
+  TError,
+  { id: string },
+  TContext
+> => {
+  const mutationKey = ["deleteRecord"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof deleteRecord>>,
+    { id: string }
+  > = (props) => {
+    const { id } = props ?? {};
+
+    return deleteRecord(id, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type DeleteRecordMutationResult = NonNullable<
+  Awaited<ReturnType<typeof deleteRecord>>
+>;
+
+export type DeleteRecordMutationError = ErrorType<ErrorResponse>;
+
+/**
+ * @summary Delete a study record
+ */
+export const useDeleteRecord = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteRecord>>,
+    TError,
+    { id: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof deleteRecord>>,
+  TError,
+  { id: string },
+  TContext
+> => {
+  return useMutation(getDeleteRecordMutationOptions(options));
+};

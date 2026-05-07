@@ -1,82 +1,79 @@
-import { useState, useEffect, useRef } from "react";
-import type { Record } from "../types";
+import { useQueryClient } from "@tanstack/react-query";
+import {
+  useListRecords,
+  useCreateRecord,
+  useUpdateRecord,
+  useDeleteRecord,
+  getListRecordsQueryKey,
+} from "@workspace/api-client-react";
 import { isPast } from "../utils/dateUtils";
+import type { Member, Record } from "../types";
+import type { StudyRecord } from "@workspace/api-client-react";
 
-const STORAGE_KEY = "records";
-const OLD_KEY = "news-study-records";
-
-function migrate(raw: Record[]): Record[] {
-  return raw.map((r) => ({
-    completed: true,
-    editedAfter: false,
-    insight: "",
-    ...r,
-  }));
-}
-
-function saveToStorage(records: Record[]) {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
-  } catch {
-  }
-}
-
-function loadFromStorage(): Record[] {
-  try {
-    const stored =
-      localStorage.getItem(STORAGE_KEY) ?? localStorage.getItem(OLD_KEY);
-    if (!stored) return [];
-    const parsed = migrate(JSON.parse(stored));
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(parsed));
-    localStorage.removeItem(OLD_KEY);
-    return parsed;
-  } catch {
-    return [];
-  }
+function toRecord(r: StudyRecord): Record {
+  return {
+    id: r.id,
+    member: r.member as Member,
+    date: r.date,
+    title: r.title,
+    originalSummary: r.originalSummary,
+    threeLineSummary: r.threeLineSummary,
+    insight: r.insight,
+    createdAt: r.createdAt,
+    completed: r.completed,
+    editedAfter: r.editedAfter,
+  };
 }
 
 export function useRecords() {
-  const [records, setRecords] = useState<Record[]>(loadFromStorage);
-  const recordsRef = useRef<Record[]>(records);
+  const queryClient = useQueryClient();
+  const { data = [], isLoading } = useListRecords();
+  const records: Record[] = data.map(toRecord);
 
-  useEffect(() => {
-    recordsRef.current = records;
-    saveToStorage(records);
-  }, [records]);
+  const createMutation = useCreateRecord();
+  const updateMutation = useUpdateRecord();
+  const deleteMutation = useDeleteRecord();
+
+  const queryKey = getListRecordsQueryKey();
 
   function addRecord(record: Record) {
-    const next_record: Record = {
+    const next: Record = {
       ...record,
       completed: !isPast(record.date),
       editedAfter: false,
     };
-    const next = [next_record, ...recordsRef.current];
-    recordsRef.current = next;
-    saveToStorage(next);
-    setRecords(next);
+    queryClient.setQueryData(queryKey, (old: StudyRecord[] = []) => [next, ...old]);
+    createMutation.mutate(
+      { data: next },
+      { onError: () => queryClient.invalidateQueries({ queryKey }) },
+    );
   }
 
   function updateRecord(updated: Record) {
     const editedAfterFlag = isPast(updated.date) ? true : updated.editedAfter;
     const patched: Record = { ...updated, editedAfter: editedAfterFlag };
-    const next = recordsRef.current.map((r) =>
-      r.id === patched.id ? patched : r
+    queryClient.setQueryData(queryKey, (old: StudyRecord[] = []) =>
+      old.map((r) => (r.id === patched.id ? patched : r)),
     );
-    recordsRef.current = next;
-    saveToStorage(next);
-    setRecords(next);
+    updateMutation.mutate(
+      { id: patched.id, data: patched },
+      { onError: () => queryClient.invalidateQueries({ queryKey }) },
+    );
   }
 
   function deleteRecord(id: string) {
-    const next = recordsRef.current.filter((r) => r.id !== id);
-    recordsRef.current = next;
-    saveToStorage(next);
-    setRecords(next);
+    queryClient.setQueryData(queryKey, (old: StudyRecord[] = []) =>
+      old.filter((r) => r.id !== id),
+    );
+    deleteMutation.mutate(
+      { id },
+      { onError: () => queryClient.invalidateQueries({ queryKey }) },
+    );
   }
 
   function getRecord(id: string): Record | undefined {
-    return recordsRef.current.find((r) => r.id === id);
+    return records.find((r) => r.id === id);
   }
 
-  return { records, addRecord, updateRecord, deleteRecord, getRecord };
+  return { records, isLoading, addRecord, updateRecord, deleteRecord, getRecord };
 }
