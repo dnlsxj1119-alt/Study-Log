@@ -59,8 +59,8 @@ function DayPanel({ dateStr, records, onClose }: DayPanelProps) {
                 </span>
                 <div className="min-w-0">
                   <p className="text-sm font-medium text-gray-800 truncate">{r.title}</p>
-                  <p className="text-xs text-gray-400 truncate mt-0.5 line-clamp-1">
-                    {r.threeLineSummary.split("\n")[0]}
+                  <p className="text-xs text-gray-400 truncate mt-0.5">
+                    {(r.threeLineSummary ?? "").split("\n")[0]}
                   </p>
                 </div>
                 <span className="ml-auto text-gray-300 text-sm flex-shrink-0">›</span>
@@ -132,15 +132,16 @@ export default function Calendar() {
     return r.completed !== false && r.editedAfter !== true;
   }
 
-  const countA = new Set(
+  const datesA = new Set(
     thisMonthRecords.filter((r) => r.member === "A" && isCountable(r)).map((r) => r.date)
-  ).size;
-  const countB = new Set(
+  );
+  const datesB = new Set(
     thisMonthRecords.filter((r) => r.member === "B" && isCountable(r)).map((r) => r.date)
-  ).size;
-  const countAll = new Set(
-    thisMonthRecords.filter(isCountable).map((r) => r.date)
-  ).size;
+  );
+
+  const countA = datesA.size;
+  const countB = datesB.size;
+  const countAll = [...datesA].filter((d) => datesB.has(d)).length;
 
   const rateA = daysInMonth > 0 ? Math.round((countA / daysInMonth) * 100) : 0;
   const rateB = daysInMonth > 0 ? Math.round((countB / daysInMonth) * 100) : 0;
@@ -209,7 +210,7 @@ export default function Calendar() {
         <div className="space-y-1">
           <div className="flex items-center justify-between text-xs">
             <span className="flex items-center gap-1.5 font-medium text-gray-600">
-              <span className="w-2 h-2 rounded-full bg-gray-400 inline-block" /> 전체
+              <span className="w-2 h-2 rounded-full bg-gray-400 inline-block" /> 전체 (A+B 모두)
             </span>
             <span className="text-gray-500">{daysInMonth}일 중 {countAll}일</span>
             <span className="font-bold text-gray-700 w-10 text-right">{rateAll}%</span>
@@ -244,6 +245,7 @@ export default function Calendar() {
           const dayRecords = recordsForDate(dateStr);
           const hasA = dayRecords.some((r) => r.member === "A");
           const hasB = dayRecords.some((r) => r.member === "B");
+          const bothComplete = datesA.has(dateStr) && datesB.has(dateStr);
           const isToday =
             day === today.getDate() &&
             month === today.getMonth() &&
@@ -261,6 +263,8 @@ export default function Calendar() {
                   ? "bg-gray-800 text-white ring-2 ring-gray-800"
                   : isToday
                   ? "bg-black text-white"
+                  : bothComplete
+                  ? "bg-indigo-50 hover:bg-indigo-100"
                   : dayRecords.length > 0
                   ? "bg-gray-100 hover:bg-gray-200"
                   : "hover:bg-gray-50"

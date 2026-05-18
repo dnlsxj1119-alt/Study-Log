@@ -2,50 +2,6 @@ import { useState } from "react";
 import { useParams, useLocation, Link } from "wouter";
 import { useRecords } from "../hooks/useRecords";
 
-const OLD_LABEL_MAP: Record<string, string> = {
-  "핵심:": "핵심",
-  "배경:": "배경",
-  "시사점:": "시사점",
-};
-
-function isKeywordFormat(raw: string): boolean {
-  return /^\(\d+\)/.test(raw.trim());
-}
-
-function parseKeywordLines(raw: string): { num: string; keywords: string[] }[] {
-  const matches = [...raw.matchAll(/\((\d+)\)\s*([^\n]*)/g)];
-  return matches.map((m) => ({
-    num: m[1],
-    keywords: m[2]
-      .split(",")
-      .map((k) => k.trim())
-      .filter(Boolean),
-  }));
-}
-
-function parseOldSummaryLines(raw: string) {
-  return raw
-    .split("\n")
-    .map((s) => s.trim())
-    .filter((s) => s.length > 0)
-    .map((line) => {
-      const prefix = Object.keys(OLD_LABEL_MAP).find((k) => line.startsWith(k));
-      if (prefix) {
-        return { label: OLD_LABEL_MAP[prefix], text: line.slice(prefix.length).trim() };
-      }
-      return { label: null, text: line };
-    });
-}
-
-const BADGE_COLORS = ["bg-indigo-500", "bg-blue-400", "bg-sky-400"];
-const KW_COLORS = [
-  "bg-indigo-100 text-indigo-700",
-  "bg-blue-100 text-blue-700",
-  "bg-sky-100 text-sky-700",
-  "bg-violet-100 text-violet-700",
-  "bg-purple-100 text-purple-700",
-];
-
 export default function Detail() {
   const params = useParams<{ id: string }>();
   const [, navigate] = useLocation();
@@ -77,9 +33,10 @@ export default function Detail() {
     }
   }
 
-  const isKeyword = isKeywordFormat(record.threeLineSummary);
-  const keywordLines = isKeyword ? parseKeywordLines(record.threeLineSummary) : [];
-  const oldLines = !isKeyword ? parseOldSummaryLines(record.threeLineSummary) : [];
+  const summaryLines = record.threeLineSummary
+    .split("\n")
+    .map((l) => l.trim())
+    .filter(Boolean);
 
   return (
     <div className="p-6 max-w-lg mx-auto">
@@ -134,59 +91,17 @@ export default function Detail() {
           <h2 className="text-xs font-semibold text-indigo-500 uppercase tracking-wider mb-3">
             핵심 요약
           </h2>
-
-          {isKeyword ? (
-            keywordLines.length > 0 ? (
-              <div className="space-y-2.5">
-                {keywordLines.map((item, idx) => (
-                  <div key={item.num} className="flex items-start gap-2.5">
-                    <span
-                      className={`flex-shrink-0 w-5 h-5 rounded-full text-[10px] font-bold flex items-center justify-center text-white mt-0.5 ${
-                        BADGE_COLORS[idx] ?? "bg-gray-400"
-                      }`}
-                    >
-                      {item.num}
-                    </span>
-                    <div className="flex flex-wrap gap-1.5">
-                      {item.keywords.map((kw, ki) => (
-                        <span
-                          key={ki}
-                          className={`text-xs font-semibold px-2.5 py-1 rounded-full ${
-                            KW_COLORS[(idx * 2 + ki) % KW_COLORS.length]
-                          }`}
-                        >
-                          {kw}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-sm text-gray-400">핵심 요약이 없습니다.</p>
-            )
-          ) : oldLines.length > 0 ? (
-            <ol className="space-y-3">
-              {oldLines.map((item, idx) => (
-                <li key={idx} className="flex gap-3 text-sm leading-relaxed">
-                  <span
-                    className={`flex-shrink-0 w-5 h-5 rounded-full text-[10px] font-bold flex items-center justify-center text-white mt-0.5 ${
-                      BADGE_COLORS[idx] ?? "bg-gray-400"
-                    }`}
-                  >
+          {summaryLines.length > 0 ? (
+            <ul className="space-y-2">
+              {summaryLines.map((line, idx) => (
+                <li key={idx} className="flex items-start gap-2.5 text-sm text-gray-800 leading-relaxed">
+                  <span className="flex-shrink-0 w-5 h-5 rounded-full bg-indigo-400 text-white text-[10px] font-bold flex items-center justify-center mt-0.5">
                     {idx + 1}
                   </span>
-                  <div>
-                    {item.label && (
-                      <span className="text-xs font-semibold text-indigo-400 mr-1">
-                        [{item.label}]
-                      </span>
-                    )}
-                    <span className="text-gray-800">{item.text}</span>
-                  </div>
+                  <span>{line.replace(/^\(\d+\)\s*/, "")}</span>
                 </li>
               ))}
-            </ol>
+            </ul>
           ) : (
             <p className="text-sm text-gray-400">핵심 요약이 없습니다.</p>
           )}
