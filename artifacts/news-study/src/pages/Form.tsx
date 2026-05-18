@@ -8,6 +8,21 @@ function generateId() {
   return Date.now().toString(36) + Math.random().toString(36).slice(2);
 }
 
+const API_BASE = (import.meta.env.VITE_API_BASE_URL as string | undefined) ?? "";
+
+async function extractTitleFromUrl(url: string): Promise<string> {
+  const res = await fetch(`${API_BASE}/api/extract-title`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ url }),
+  });
+  const json = (await res.json()) as { title?: string; error?: string };
+  if (!res.ok || !json.title) {
+    throw new Error(json.error ?? "제목 추출 실패");
+  }
+  return json.title;
+}
+
 export default function Form() {
   const params = useParams<{ id?: string }>();
   const [, navigate] = useLocation();
@@ -18,11 +33,14 @@ export default function Form() {
 
   const [member, setMember] = useState<Member>(existing?.member ?? "A");
   const [date, setDate] = useState(existing?.date ?? getTodayString());
+  const [articleUrl, setArticleUrl] = useState("");
   const [title, setTitle] = useState(existing?.title ?? "");
   const [originalSummary, setOriginalSummary] = useState(existing?.originalSummary ?? "");
   const [threeLineSummary, setThreeLineSummary] = useState(existing?.threeLineSummary ?? "");
   const [insight, setInsight] = useState(existing?.insight ?? "");
   const [error, setError] = useState("");
+  const [isExtracting, setIsExtracting] = useState(false);
+  const [extractState, setExtractState] = useState<"idle" | "ok" | "error">("idle");
 
   useEffect(() => {
     if (existing) {
@@ -32,8 +50,32 @@ export default function Form() {
       setOriginalSummary(existing.originalSummary);
       setThreeLineSummary(existing.threeLineSummary);
       setInsight(existing.insight ?? "");
+      setArticleUrl("");
+      setExtractState("idle");
     }
   }, [params.id]);
+
+  async function handleExtractTitle() {
+    if (!articleUrl.trim()) {
+      setExtractState("error");
+      setError("기사 URL을 입력해주세요.");
+      return;
+    }
+    setIsExtracting(true);
+    setExtractState("idle");
+    setError("");
+    try {
+      const extracted = await extractTitleFromUrl(articleUrl.trim());
+      setTitle(extracted);
+      setExtractState("ok");
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : "제목 추출 실패";
+      setError(`제목 추출 실패: ${msg}`);
+      setExtractState("error");
+    } finally {
+      setIsExtracting(false);
+    }
+  }
 
   const isDatePast = !isEdit && isPast(date);
   const isDateFuture = !isEdit && date > getTodayString();
@@ -142,14 +184,46 @@ export default function Form() {
         </div>
 
         <div>
-          <label className="block text-xs font-semibold text-gray-500 mb-1.5">기사 제목</label>
+          <div className="flex items-center justify-between mb-1.5">
+            <label className="block text-xs font-semibold text-gray-500">기사 제목</label>
+            {extractState === "ok" && (
+              <span className="text-xs text-indigo-500 font-medium">✓ 자동 추출됨</span>
+            )}
+          </div>
           <input
             type="text"
             value={title}
-            onChange={(e) => { setTitle(e.target.value); setError(""); }}
+            onChange={(e) => { setTitle(e.target.value); setExtractState("idle"); setError(""); }}
             placeholder="예: 삼성전자, AI 반도체 투자 확대 발표"
-            className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-gray-400"
+            className={`w-full border rounded-xl px-4 py-2.5 text-sm outline-none transition-colors ${
+              extractState === "ok"
+                ? "border-indigo-300 bg-indigo-50 focus:border-indigo-400"
+                : "border-gray-200 focus:border-gray-400"
+            }`}
           />
+
+          <div className="flex gap-2 mt-2">
+            <input
+              type="url"
+              value={articleUrl}
+              onChange={(e) => { setArticleUrl(e.target.value); setExtractState("idle"); }}
+              placeholder="기사 URL 붙여넣기 (선택)"
+              className="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-xs outline-none focus:border-indigo-300 placeholder-gray-300"
+            />
+            <button
+              type="button"
+              onClick={handleExtractTitle}
+              disabled={isExtracting || !articleUrl.trim()}
+              className={`flex-shrink-0 px-3 py-2 rounded-xl text-xs font-semibold border transition-colors ${
+                articleUrl.trim() && !isExtracting
+                  ? "border-indigo-500 text-indigo-600 hover:bg-indigo-500 hover:text-white"
+                  : "border-gray-200 text-gray-300 cursor-not-allowed"
+              }`}
+            >
+              {isExtracting ? "추출 중…" : "✦ 제목 추출"}
+            </button>
+          </div>
+          <p className="mt-1 text-xs text-gray-400">기사 URL을 입력하면 원문 제목을 자동으로 가져옵니다.</p>
         </div>
 
         <div>
