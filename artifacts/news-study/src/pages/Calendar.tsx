@@ -11,6 +11,16 @@ function getFirstDayOfMonth(year: number, month: number) {
   return new Date(year, month, 1).getDay();
 }
 
+function getWeekdaysInMonth(year: number, month: number) {
+  const total = getDaysInMonth(year, month);
+  let count = 0;
+  for (let d = 1; d <= total; d++) {
+    const dow = new Date(year, month, d).getDay();
+    if (dow !== 0 && dow !== 6) count++;
+  }
+  return count;
+}
+
 function toDateStr(year: number, month: number, day: number) {
   return `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
 }
@@ -90,6 +100,7 @@ export default function Calendar() {
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
 
   const daysInMonth = getDaysInMonth(year, month);
+  const weekdaysInMonth = getWeekdaysInMonth(year, month);
   const firstDay = getFirstDayOfMonth(year, month);
 
   function recordsForDate(dateStr: string) {
@@ -143,9 +154,9 @@ export default function Calendar() {
   const countB = datesB.size;
   const countAll = [...datesA].filter((d) => datesB.has(d)).length;
 
-  const rateA = daysInMonth > 0 ? Math.round((countA / daysInMonth) * 100) : 0;
-  const rateB = daysInMonth > 0 ? Math.round((countB / daysInMonth) * 100) : 0;
-  const rateAll = daysInMonth > 0 ? Math.round((countAll / daysInMonth) * 100) : 0;
+  const rateA = weekdaysInMonth > 0 ? Math.round((countA / weekdaysInMonth) * 100) : 0;
+  const rateB = weekdaysInMonth > 0 ? Math.round((countB / weekdaysInMonth) * 100) : 0;
+  const rateAll = weekdaysInMonth > 0 ? Math.round((countAll / weekdaysInMonth) * 100) : 0;
 
   const selectedRecords = selectedDate ? recordsForDate(selectedDate) : [];
 
@@ -172,7 +183,7 @@ export default function Calendar() {
       <div className="bg-white border border-gray-100 rounded-2xl p-4 mb-4 space-y-3">
         <div className="flex items-center justify-between mb-1">
           <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">월간 완료율</span>
-          <span className="text-xs text-gray-400">{daysInMonth}일 기준</span>
+          <span className="text-xs text-gray-400">평일 {weekdaysInMonth}일 기준</span>
         </div>
 
         <div className="space-y-1">
@@ -180,7 +191,7 @@ export default function Calendar() {
             <span className="flex items-center gap-1.5 font-medium text-blue-600">
               <span className="w-2 h-2 rounded-full bg-blue-400 inline-block" /> 멤버 A
             </span>
-            <span className="text-gray-500">{daysInMonth}일 중 {countA}일</span>
+            <span className="text-gray-500">평일 {weekdaysInMonth}일 중 {countA}일</span>
             <span className="font-bold text-blue-600 w-10 text-right">{rateA}%</span>
           </div>
           <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
@@ -196,7 +207,7 @@ export default function Calendar() {
             <span className="flex items-center gap-1.5 font-medium text-green-600">
               <span className="w-2 h-2 rounded-full bg-green-400 inline-block" /> 멤버 B
             </span>
-            <span className="text-gray-500">{daysInMonth}일 중 {countB}일</span>
+            <span className="text-gray-500">평일 {weekdaysInMonth}일 중 {countB}일</span>
             <span className="font-bold text-green-600 w-10 text-right">{rateB}%</span>
           </div>
           <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
@@ -212,7 +223,7 @@ export default function Calendar() {
             <span className="flex items-center gap-1.5 font-medium text-gray-600">
               <span className="w-2 h-2 rounded-full bg-gray-400 inline-block" /> 전체 (A+B 모두)
             </span>
-            <span className="text-gray-500">{daysInMonth}일 중 {countAll}일</span>
+            <span className="text-gray-500">평일 {weekdaysInMonth}일 중 {countAll}일</span>
             <span className="font-bold text-gray-700 w-10 text-right">{rateAll}%</span>
           </div>
           <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
