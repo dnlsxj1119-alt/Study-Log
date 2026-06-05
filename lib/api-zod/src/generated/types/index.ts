@@ -9,3 +9,4 @@
 export * from "./errorResponse";
 export * from "./healthStatus";
 export * from "./studyRecord";
+export * from "./vacationPeriod";

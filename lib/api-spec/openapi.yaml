@@ -12,6 +12,8 @@ tags:
     description: Health operations
   - name: records
     description: Study record operations
+  - name: vacations
+    description: Vacation period operations
 paths:
   /healthz:
     get:
@@ -118,6 +120,98 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
+  /vacations:
+    get:
+      operationId: listVacations
+      tags: [vacations]
+      summary: List all vacation periods
+      responses:
+        "200":
+          description: List of vacation periods
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/VacationPeriod"
+    post:
+      operationId: createVacation
+      tags: [vacations]
+      summary: Create a vacation period
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VacationPeriod"
+      responses:
+        "201":
+          description: Created vacation period
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VacationPeriod"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /vacations/{id}:
+    put:
+      operationId: updateVacation
+      tags: [vacations]
+      summary: Update a vacation period
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VacationPeriod"
+      responses:
+        "200":
+          description: Updated vacation period
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VacationPeriod"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      operationId: deleteVacation
+      tags: [vacations]
+      summary: Delete a vacation period
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Deleted successfully
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
 components:
   schemas:
     HealthStatus:
@@ -161,6 +255,25 @@ components:
         - createdAt
         - completed
         - editedAfter
+    VacationPeriod:
+      type: object
+      properties:
+        id:
+          type: string
+        startDate:
+          type: string
+        endDate:
+          type: string
+        memo:
+          type: string
+        createdAt:
+          type: string
+      required:
+        - id
+        - startDate
+        - endDate
+        - memo
+        - createdAt
     ErrorResponse:
       type: object
       properties:

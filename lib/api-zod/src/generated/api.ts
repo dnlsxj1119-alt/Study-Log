@@ -87,3 +87,56 @@ export const UpdateRecordResponse = zod.object({
 export const DeleteRecordParams = zod.object({
   id: zod.coerce.string(),
 });
+
+/**
+ * @summary List all vacation periods
+ */
+export const ListVacationsResponseItem = zod.object({
+  id: zod.string(),
+  startDate: zod.string(),
+  endDate: zod.string(),
+  memo: zod.string(),
+  createdAt: zod.string(),
+});
+export const ListVacationsResponse = zod.array(ListVacationsResponseItem);
+
+/**
+ * @summary Create a vacation period
+ */
+export const CreateVacationBody = zod.object({
+  id: zod.string(),
+  startDate: zod.string(),
+  endDate: zod.string(),
+  memo: zod.string(),
+  createdAt: zod.string(),
+});
+
+/**
+ * @summary Update a vacation period
+ */
+export const UpdateVacationParams = zod.object({
+  id: zod.coerce.string(),
+});
+
+export const UpdateVacationBody = zod.object({
+  id: zod.string(),
+  startDate: zod.string(),
+  endDate: zod.string(),
+  memo: zod.string(),
+  createdAt: zod.string(),
+});
+
+export const UpdateVacationResponse = zod.object({
+  id: zod.string(),
+  startDate: zod.string(),
+  endDate: zod.string(),
+  memo: zod.string(),
+  createdAt: zod.string(),
+});
+
+/**
+ * @summary Delete a vacation period
+ */
+export const DeleteVacationParams = zod.object({
+  id: zod.coerce.string(),
+});

@@ -16,7 +16,12 @@ import type {
   UseQueryResult,
 } from "@tanstack/react-query";
 
-import type { ErrorResponse, HealthStatus, StudyRecord } from "./api.schemas";
+import type {
+  ErrorResponse,
+  HealthStatus,
+  StudyRecord,
+  VacationPeriod,
+} from "./api.schemas";
 
 import { customFetch } from "../custom-fetch";
 import type { ErrorType, BodyType } from "../custom-fetch";
@@ -433,4 +438,336 @@ export const useDeleteRecord = <
   TContext
 > => {
   return useMutation(getDeleteRecordMutationOptions(options));
+};
+
+/**
+ * @summary List all vacation periods
+ */
+export const getListVacationsUrl = () => {
+  return `/api/vacations`;
+};
+
+export const listVacations = async (
+  options?: RequestInit,
+): Promise<VacationPeriod[]> => {
+  return customFetch<VacationPeriod[]>(getListVacationsUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getListVacationsQueryKey = () => {
+  return [`/api/vacations`] as const;
+};
+
+export const getListVacationsQueryOptions = <
+  TData = Awaited<ReturnType<typeof listVacations>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listVacations>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getListVacationsQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof listVacations>>> = ({
+    signal,
+  }) => listVacations({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof listVacations>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type ListVacationsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listVacations>>
+>;
+export type ListVacationsQueryError = ErrorType<unknown>;
+
+/**
+ * @summary List all vacation periods
+ */
+
+export function useListVacations<
+  TData = Awaited<ReturnType<typeof listVacations>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listVacations>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getListVacationsQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Create a vacation period
+ */
+export const getCreateVacationUrl = () => {
+  return `/api/vacations`;
+};
+
+export const createVacation = async (
+  vacationPeriod: VacationPeriod,
+  options?: RequestInit,
+): Promise<VacationPeriod> => {
+  return customFetch<VacationPeriod>(getCreateVacationUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(vacationPeriod),
+  });
+};
+
+export const getCreateVacationMutationOptions = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createVacation>>,
+    TError,
+    { data: BodyType<VacationPeriod> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof createVacation>>,
+  TError,
+  { data: BodyType<VacationPeriod> },
+  TContext
+> => {
+  const mutationKey = ["createVacation"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof createVacation>>,
+    { data: BodyType<VacationPeriod> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return createVacation(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type CreateVacationMutationResult = NonNullable<
+  Awaited<ReturnType<typeof createVacation>>
+>;
+export type CreateVacationMutationBody = BodyType<VacationPeriod>;
+export type CreateVacationMutationError = ErrorType<ErrorResponse>;
+
+/**
+ * @summary Create a vacation period
+ */
+export const useCreateVacation = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createVacation>>,
+    TError,
+    { data: BodyType<VacationPeriod> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof createVacation>>,
+  TError,
+  { data: BodyType<VacationPeriod> },
+  TContext
+> => {
+  return useMutation(getCreateVacationMutationOptions(options));
+};
+
+/**
+ * @summary Update a vacation period
+ */
+export const getUpdateVacationUrl = (id: string) => {
+  return `/api/vacations/${id}`;
+};
+
+export const updateVacation = async (
+  id: string,
+  vacationPeriod: VacationPeriod,
+  options?: RequestInit,
+): Promise<VacationPeriod> => {
+  return customFetch<VacationPeriod>(getUpdateVacationUrl(id), {
+    ...options,
+    method: "PUT",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(vacationPeriod),
+  });
+};
+
+export const getUpdateVacationMutationOptions = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateVacation>>,
+    TError,
+    { id: string; data: BodyType<VacationPeriod> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof updateVacation>>,
+  TError,
+  { id: string; data: BodyType<VacationPeriod> },
+  TContext
+> => {
+  const mutationKey = ["updateVacation"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof updateVacation>>,
+    { id: string; data: BodyType<VacationPeriod> }
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return updateVacation(id, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UpdateVacationMutationResult = NonNullable<
+  Awaited<ReturnType<typeof updateVacation>>
+>;
+export type UpdateVacationMutationBody = BodyType<VacationPeriod>;
+export type UpdateVacationMutationError = ErrorType<ErrorResponse>;
+
+/**
+ * @summary Update a vacation period
+ */
+export const useUpdateVacation = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateVacation>>,
+    TError,
+    { id: string; data: BodyType<VacationPeriod> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof updateVacation>>,
+  TError,
+  { id: string; data: BodyType<VacationPeriod> },
+  TContext
+> => {
+  return useMutation(getUpdateVacationMutationOptions(options));
+};
+
+/**
+ * @summary Delete a vacation period
+ */
+export const getDeleteVacationUrl = (id: string) => {
+  return `/api/vacations/${id}`;
+};
+
+export const deleteVacation = async (
+  id: string,
+  options?: RequestInit,
+): Promise<void> => {
+  return customFetch<void>(getDeleteVacationUrl(id), {
+    ...options,
+    method: "DELETE",
+  });
+};
+
+export const getDeleteVacationMutationOptions = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteVacation>>,
+    TError,
+    { id: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof deleteVacation>>,
+  TError,
+  { id: string },
+  TContext
+> => {
+  const mutationKey = ["deleteVacation"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof deleteVacation>>,
+    { id: string }
+  > = (props) => {
+    const { id } = props ?? {};
+
+    return deleteVacation(id, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type DeleteVacationMutationResult = NonNullable<
+  Awaited<ReturnType<typeof deleteVacation>>
+>;
+
+export type DeleteVacationMutationError = ErrorType<ErrorResponse>;
+
+/**
+ * @summary Delete a vacation period
+ */
+export const useDeleteVacation = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteVacation>>,
+    TError,
+    { id: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof deleteVacation>>,
+  TError,
+  { id: string },
+  TContext
+> => {
+  return useMutation(getDeleteVacationMutationOptions(options));
 };

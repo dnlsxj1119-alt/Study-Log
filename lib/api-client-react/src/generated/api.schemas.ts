@@ -22,6 +22,14 @@ export interface StudyRecord {
   editedAfter: boolean;
 }
 
+export interface VacationPeriod {
+  id: string;
+  startDate: string;
+  endDate: string;
+  memo: string;
+  createdAt: string;
+}
+
 export interface ErrorResponse {
   error: string;
 }
