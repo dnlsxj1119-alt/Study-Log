@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams, useLocation } from "wouter";
+import { useParams, useLocation, useSearch } from "wouter";
 import { useRecords } from "../hooks/useRecords";
 import { getTodayString, isPast } from "../utils/dateUtils";
 import type { Member, Record } from "../types";
@@ -19,11 +19,17 @@ export default function Form() {
   const [, navigate] = useLocation();
   const { getRecord, addRecord, updateRecord, isMutating } = useRecords();
 
+  const search = useSearch();
+  const queryDate = new URLSearchParams(search).get("date") ?? "";
+
   const isEdit = !!params.id;
   const existing = params.id ? getRecord(params.id) : undefined;
 
+  const initialDate = existing?.date ?? (queryDate || getTodayString());
+  console.log("[Form] 수신한 날짜:", initialDate, "| query:", queryDate, "| 오늘:", getTodayString());
+
   const [member, setMember] = useState<Member>(existing?.member ?? "A");
-  const [date, setDate] = useState(existing?.date ?? getTodayString());
+  const [date, setDate] = useState(initialDate);
   const [title, setTitle] = useState(existing?.title ?? "");
   const [originalSummary, setOriginalSummary] = useState(existing?.originalSummary ?? "");
   const [threeLineSummary, setThreeLineSummary] = useState(existing?.threeLineSummary ?? "");
@@ -77,6 +83,7 @@ export default function Form() {
           threeLineSummary,
           insight,
         };
+        console.log("[Form] 저장(수정) 날짜:", updated.date);
         await updateRecord(updated);
         navigate(`/detail/${existing.id}`);
       } else {
@@ -92,6 +99,7 @@ export default function Form() {
           completed: true,
           editedAfter: false,
         };
+        console.log("[Form] 저장(신규) 날짜:", record.date);
         await addRecord(record);
         navigate("/records");
       }

@@ -82,8 +82,9 @@ function DayPanel({ dateStr, records, onClose }: DayPanelProps) {
 
       <div className="px-4 py-3 border-t border-gray-50">
         <Link
-          href="/form"
+          href={`/form?date=${dateStr}`}
           className="block w-full text-center text-xs font-semibold text-gray-500 hover:text-black transition-colors"
+          onClick={() => console.log("[Calendar] 날짜 이동:", dateStr)}
         >
           + 이 날짜로 새 기록 이동
         </Link>
