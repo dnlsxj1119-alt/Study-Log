@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "wouter";
+import { Link, useSearch } from "wouter";
 import { useRecords } from "../hooks/useRecords";
 import type { Record } from "../types";
 
@@ -96,9 +96,15 @@ function DayPanel({ dateStr, records, onClose }: DayPanelProps) {
 export default function Calendar() {
   const { records } = useRecords();
   const today = new Date();
-  const [year, setYear] = useState(today.getFullYear());
-  const [month, setMonth] = useState(today.getMonth());
-  const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  const search = useSearch();
+  const returnDate = new URLSearchParams(search).get("date") ?? "";
+  const returnDateObj = returnDate.match(/^\d{4}-\d{2}-\d{2}$/)
+    ? new Date(returnDate + "T00:00:00")
+    : null;
+
+  const [year, setYear] = useState(returnDateObj ? returnDateObj.getFullYear() : today.getFullYear());
+  const [month, setMonth] = useState(returnDateObj ? returnDateObj.getMonth() : today.getMonth());
+  const [selectedDate, setSelectedDate] = useState<string | null>(returnDate || null);
 
   const daysInMonth = getDaysInMonth(year, month);
   const weekdaysInMonth = getWeekdaysInMonth(year, month);

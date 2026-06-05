@@ -101,7 +101,7 @@ export default function Form() {
         };
         console.log("[Form] 저장(신규) 날짜:", record.date);
         await addRecord(record);
-        navigate("/records");
+        navigate(`/calendar?date=${record.date}`);
       }
     } catch {
       setError("저장 실패: 서버에 연결할 수 없습니다. VITE_API_BASE_URL 환경변수를 확인하세요.");
