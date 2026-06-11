@@ -25,7 +25,7 @@ export default function Records() {
 
       {isError && (
         <div className="bg-red-50 rounded-xl p-3 mb-4 text-xs text-red-600">
-          ⚠ 불러오기 실패: API 서버에 연결할 수 없습니다. <code className="bg-red-100 px-1 rounded">VITE_API_BASE_URL</code>을 확인하세요.
+          ⚠ 불러오기 실패: API 서버에 연결할 수 없습니다.
         </div>
       )}
 

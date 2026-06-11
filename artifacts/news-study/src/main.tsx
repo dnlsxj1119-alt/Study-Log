@@ -5,9 +5,7 @@ import App from "./App";
 import "./index.css";
 
 const apiBase = import.meta.env.VITE_API_BASE_URL as string | undefined;
-if (apiBase) {
-  setBaseUrl(apiBase);
-}
+setBaseUrl(apiBase || "/api");
 
 const queryClient = new QueryClient({
   defaultOptions: {
