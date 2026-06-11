@@ -1,4 +1,4 @@
-import { Router, type Request, type Response } from "express";
+import { Router, type IRouter } from "express";
 import { eq } from "drizzle-orm";
 import { db, vacationPeriodsTable } from "@workspace/db";
 import {
@@ -10,9 +10,9 @@ import {
   UpdateVacationResponse,
 } from "@workspace/api-zod";
 
-const router = Router();
+const router: IRouter = Router();
 
-router.get("/vacations", async (req: Request, res: Response): Promise<void> => {
+router.get("/vacations", async (req, res): Promise<void> => {
   const rows = await db
     .select()
     .from(vacationPeriodsTable)
@@ -20,10 +20,10 @@ router.get("/vacations", async (req: Request, res: Response): Promise<void> => {
   res.json(ListVacationsResponse.parse(rows));
 });
 
-router.post("/vacations", async (req: Request, res: Response): Promise<void> => {
+router.post("/vacations", async (req, res): Promise<void> => {
   const parsed = CreateVacationBody.safeParse(req.body);
   if (!parsed.success) {
-    console.warn("Invalid create vacation body", { errors: parsed.error.message });
+    req.log.warn({ errors: parsed.error.message }, "Invalid create vacation body");
     res.status(400).json({ error: parsed.error.message });
     return;
   }
@@ -40,7 +40,7 @@ router.post("/vacations", async (req: Request, res: Response): Promise<void> => 
   res.status(201).json(UpdateVacationResponse.parse(row));
 });
 
-router.put("/vacations/:id", async (req: Request, res: Response): Promise<void> => {
+router.put("/vacations/:id", async (req, res): Promise<void> => {
   const params = UpdateVacationParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
@@ -49,7 +49,7 @@ router.put("/vacations/:id", async (req: Request, res: Response): Promise<void> 
 
   const parsed = UpdateVacationBody.safeParse(req.body);
   if (!parsed.success) {
-    console.warn("Invalid update vacation body", { errors: parsed.error.message });
+    req.log.warn({ errors: parsed.error.message }, "Invalid update vacation body");
     res.status(400).json({ error: parsed.error.message });
     return;
   }
@@ -68,7 +68,7 @@ router.put("/vacations/:id", async (req: Request, res: Response): Promise<void> 
   res.json(UpdateVacationResponse.parse(row));
 });
 
-router.delete("/vacations/:id", async (req: Request, res: Response): Promise<void> => {
+router.delete("/vacations/:id", async (req, res): Promise<void> => {
   const params = DeleteVacationParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });

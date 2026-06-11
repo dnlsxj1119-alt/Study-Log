@@ -1,8 +1,8 @@
-import { Router, type Request, type Response } from "express";
+import { Router, type IRouter } from "express";
 
-const router = Router();
+const router: IRouter = Router();
 
-router.post("/extract-title", async (req: Request, res: Response): Promise<void> => {
+router.post("/extract-title", async (req, res): Promise<void> => {
   const { url } = req.body as { url?: unknown };
 
   if (!url || typeof url !== "string") {
@@ -95,14 +95,14 @@ router.post("/extract-title", async (req: Request, res: Response): Promise<void>
       return;
     }
 
-    console.log("Title extracted", { url, title });
+    req.log.info({ url, title }, "Title extracted");
     res.json({ title });
   } catch (err: unknown) {
     if (err instanceof Error && err.name === "AbortError") {
       res.status(504).json({ error: "기사 페이지 로딩 시간이 초과됐습니다." });
       return;
     }
-    console.warn("Failed to extract title", { err, url });
+    req.log.warn({ err, url }, "Failed to extract title");
     res.status(500).json({ error: "기사 제목 추출에 실패했습니다." });
   }
 });
