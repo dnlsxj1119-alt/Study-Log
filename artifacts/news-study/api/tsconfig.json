@@ -5,7 +5,8 @@
     "moduleResolution": "NodeNext",
     "outDir": ".vercel/output",
     "noEmit": false,
-    "allowImportingTsExtensions": false
+    "allowImportingTsExtensions": false,
+    "esModuleInterop": true
   },
   "include": ["**/*.ts", "../../../api-server/src/**/*.ts", "../../../lib/**/*.ts"]
 }
