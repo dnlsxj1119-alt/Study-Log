@@ -6,7 +6,7 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export * from "./errorResponse";
-export * from "./healthStatus";
-export * from "./studyRecord";
-export * from "./vacationPeriod";
+export * from "./errorResponse.js";
+export * from "./healthStatus.js";
+export * from "./studyRecord.js";
+export * from "./vacationPeriod.js";
