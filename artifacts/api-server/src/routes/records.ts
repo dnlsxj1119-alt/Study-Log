@@ -23,7 +23,7 @@ router.get("/records", async (req, res): Promise<void> => {
 router.post("/records", async (req, res): Promise<void> => {
   const parsed = CreateRecordBody.safeParse(req.body);
   if (!parsed.success) {
-    req.log.warn({ errors: parsed.error.message }, "Invalid create body");
+    console.warn("Invalid create body", { errors: parsed.error.message });
     res.status(400).json({ error: parsed.error.message });
     return;
   }
@@ -49,7 +49,7 @@ router.put("/records/:id", async (req, res): Promise<void> => {
 
   const parsed = UpdateRecordBody.safeParse(req.body);
   if (!parsed.success) {
-    req.log.warn({ errors: parsed.error.message }, "Invalid update body");
+    console.warn("Invalid update body", { errors: parsed.error.message });
     res.status(400).json({ error: parsed.error.message });
     return;
   }

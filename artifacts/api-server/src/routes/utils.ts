@@ -95,14 +95,14 @@ router.post("/extract-title", async (req, res): Promise<void> => {
       return;
     }
 
-    req.log.info({ url, title }, "Title extracted");
+    console.log("Title extracted", { url, title });
     res.json({ title });
   } catch (err: unknown) {
     if (err instanceof Error && err.name === "AbortError") {
       res.status(504).json({ error: "기사 페이지 로딩 시간이 초과됐습니다." });
       return;
     }
-    req.log.warn({ err, url }, "Failed to extract title");
+    console.warn("Failed to extract title", { err, url });
     res.status(500).json({ error: "기사 제목 추출에 실패했습니다." });
   }
 });

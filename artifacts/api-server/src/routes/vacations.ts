@@ -23,7 +23,7 @@ router.get("/vacations", async (req, res): Promise<void> => {
 router.post("/vacations", async (req, res): Promise<void> => {
   const parsed = CreateVacationBody.safeParse(req.body);
   if (!parsed.success) {
-    req.log.warn({ errors: parsed.error.message }, "Invalid create vacation body");
+    console.warn("Invalid create vacation body", { errors: parsed.error.message });
     res.status(400).json({ error: parsed.error.message });
     return;
   }
@@ -49,7 +49,7 @@ router.put("/vacations/:id", async (req, res): Promise<void> => {
 
   const parsed = UpdateVacationBody.safeParse(req.body);
   if (!parsed.success) {
-    req.log.warn({ errors: parsed.error.message }, "Invalid update vacation body");
+    console.warn("Invalid update vacation body", { errors: parsed.error.message });
     res.status(400).json({ error: parsed.error.message });
     return;
   }
