@@ -1,4 +1,4 @@
-import { Router, type IRouter } from "express";
+import { Router } from "express";
 import { eq } from "drizzle-orm";
 import { db, vacationPeriodsTable } from "@workspace/db";
 import {
@@ -10,7 +10,7 @@ import {
   UpdateVacationResponse,
 } from "@workspace/api-zod";
 
-const router: IRouter = Router();
+const router = Router();
 
 router.get("/vacations", async (req, res): Promise<void> => {
   const rows = await db

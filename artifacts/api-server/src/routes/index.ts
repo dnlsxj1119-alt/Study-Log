@@ -1,10 +1,10 @@
-import { Router, type IRouter } from "express";
+import { Router } from "express";
 import healthRouter from "./health.js";
 import recordsRouter from "./records.js";
 import utilsRouter from "./utils.js";
 import vacationsRouter from "./vacations.js";
 
-const router: IRouter = Router();
+const router = Router();
 
 router.use(healthRouter);
 router.use(recordsRouter);

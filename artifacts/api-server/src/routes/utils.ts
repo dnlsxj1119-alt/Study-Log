@@ -1,6 +1,6 @@
-import { Router, type IRouter } from "express";
+import { Router } from "express";
 
-const router: IRouter = Router();
+const router = Router();
 
 router.post("/extract-title", async (req, res): Promise<void> => {
   const { url } = req.body as { url?: unknown };
