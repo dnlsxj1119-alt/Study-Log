@@ -1,8 +1,8 @@
-import { Router } from "express";
+import { Router, type Request, type Response } from "express";
 
 const router = Router();
 
-router.post("/extract-title", async (req, res): Promise<void> => {
+router.post("/extract-title", async (req: Request, res: Response): Promise<void> => {
   const { url } = req.body as { url?: unknown };
 
   if (!url || typeof url !== "string") {

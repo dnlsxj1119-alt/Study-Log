@@ -1,4 +1,4 @@
-import { Router } from "express";
+import { Router, type Request, type Response } from "express";
 import { eq } from "drizzle-orm";
 import { db, studyRecordsTable } from "@workspace/db";
 import {
@@ -12,7 +12,7 @@ import {
 
 const router = Router();
 
-router.get("/records", async (req, res): Promise<void> => {
+router.get("/records", async (req: Request, res: Response): Promise<void> => {
   const rows = await db
     .select()
     .from(studyRecordsTable)
@@ -20,7 +20,7 @@ router.get("/records", async (req, res): Promise<void> => {
   res.json(ListRecordsResponse.parse(rows));
 });
 
-router.post("/records", async (req, res): Promise<void> => {
+router.post("/records", async (req: Request, res: Response): Promise<void> => {
   const parsed = CreateRecordBody.safeParse(req.body);
   if (!parsed.success) {
     console.warn("Invalid create body", { errors: parsed.error.message });
@@ -40,7 +40,7 @@ router.post("/records", async (req, res): Promise<void> => {
   res.status(201).json(UpdateRecordResponse.parse(row));
 });
 
-router.put("/records/:id", async (req, res): Promise<void> => {
+router.put("/records/:id", async (req: Request, res: Response): Promise<void> => {
   const params = UpdateRecordParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
@@ -68,7 +68,7 @@ router.put("/records/:id", async (req, res): Promise<void> => {
   res.json(UpdateRecordResponse.parse(row));
 });
 
-router.delete("/records/:id", async (req, res): Promise<void> => {
+router.delete("/records/:id", async (req: Request, res: Response): Promise<void> => {
   const params = DeleteRecordParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
