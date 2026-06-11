@@ -1,0 +1,11 @@
+{
+  "extends": "../../../tsconfig.base.json",
+  "compilerOptions": {
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "outDir": ".vercel/output",
+    "noEmit": false,
+    "allowImportingTsExtensions": false
+  },
+  "include": ["**/*.ts", "../../../api-server/src/**/*.ts", "../../../lib/**/*.ts"]
+}
