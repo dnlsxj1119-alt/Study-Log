@@ -28,9 +28,7 @@ export default function Home() {
         <div className="bg-red-50 rounded-xl p-4 text-center">
           <p className="text-sm font-semibold text-red-600 mb-1">불러오기 실패</p>
           <p className="text-xs text-red-500">
-            API 서버에 연결할 수 없습니다.
-            <br />
-            Vercel 배포라면 <code className="bg-red-100 px-1 rounded">VITE_API_BASE_URL</code> 환경변수를 설정하세요.
+            서버에 연결할 수 없습니다. 잠시 후 다시 시도해주세요.
           </p>
         </div>
       </div>
